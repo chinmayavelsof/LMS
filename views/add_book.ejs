@@ -33,6 +33,9 @@
 										
                                     </div>
                                     <div class="card-body task-data">
+                                        <% if (errors?._general && errors._general[0]) { %>
+                                            <div class="alert alert-danger"><%= errors._general[0] %></div>
+                                        <% } %>
                                         <!-- Add: POST to /books. Edit: POST to /books/:id -->
 										<form action="<%= action === 'add' ? '/books' : '/books/' + (old && old.id) %>" method="POST">
 											<input type="hidden" name="id" value="<%= old?.id || '' %>">

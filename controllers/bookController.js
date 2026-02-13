@@ -66,10 +66,18 @@ exports.addBook = async (req, res) => {
         req.session.success = 'Book added successfully';
         res.redirect('/books');
     } catch (error) {
+        const errors = {};
+        if (error.name === 'SequelizeUniqueConstraintError' && error.errors) {
+            const isbnErr = error.errors.find(e => e.path === 'isbn');
+            if (isbnErr) errors.isbn = ['ISBN already exists'];
+            else errors.isbn = ['This value is already in use'];
+        } else {
+            errors._general = [error.message];
+        }
         return res.render('add_book', {
             action: 'add',
             old: req.body || {},
-            errors: error.message
+            errors
         });
     }
 };
@@ -133,10 +141,18 @@ exports.updateBook = async (req, res) => {
         req.session.success = 'Book updated successfully';
         res.redirect('/books');
     } catch (error) {
+        const errors = {};
+        if (error.name === 'SequelizeUniqueConstraintError' && error.errors) {
+            const isbnErr = error.errors.find(e => e.path === 'isbn');
+            if (isbnErr) errors.isbn = ['ISBN already exists'];
+            else errors.isbn = ['This value is already in use'];
+        } else {
+            errors._general = [error.message];
+        }
         return res.render('add_book', {
             action: 'edit',
             old: { ...req.body, id: req.params.id },
-            errors: error.message
+            errors
         });
     }
 };

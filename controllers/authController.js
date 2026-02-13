@@ -71,7 +71,7 @@ exports.register = async (req, res) => {
             success: "Registration successful! Please login.",
             old: {},
             activeForm: 'login'
-        });D:\Node JS Training\Day 4\Library_management_system\controllers\authController.js
+        });
 
     } catch (error) {
         return res.render('index', {
@@ -119,7 +119,6 @@ exports.login = async (req, res) => {
                 activeForm: 'login'
             });
         }
-        console.log(user);
 
         req.session.user = {
             id: user.id,
