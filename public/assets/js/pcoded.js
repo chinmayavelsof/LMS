@@ -923,7 +923,7 @@ if ($('.pcoded-header .page-header')[0]) {
 }
 if($('.page-header-title h5')[0]){
     var page=$('.page-header-title h5').html();
-    $(document).attr("title", "Elite Able - "+page);
+    $(document).attr("title", "LMS - "+page);
 }
 // responsive header click
 $('.pcoded-header > .collapse:not(.show) .mob-toggler').click(function() {

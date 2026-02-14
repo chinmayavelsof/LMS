@@ -33,6 +33,11 @@
             return;
         }
 
+        var submitBtn = document.getElementById('bookSubmitBtn');
+        var cancelBtn = document.getElementById('bookCancelBtn');
+        if (submitBtn) submitBtn.disabled = true;
+        if (cancelBtn) cancelBtn.disabled = true;
+
         $.ajax({
             url: form.getAttribute('action'),
             type: 'POST',
@@ -44,6 +49,8 @@
                 window.location.href = (data && data.redirect) || '/books';
             },
             error: function(xhr) {
+                if (submitBtn) submitBtn.disabled = false;
+                if (cancelBtn) cancelBtn.disabled = false;
                 var err = xhr.responseJSON && xhr.responseJSON.errors;
                 if (err) showErrors(err);
                 Swal.fire({

@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const bookService = require('../services/bookService');
+const emailService = require('../services/emailService');
 const { uploadDir } = require('../middlewares/uploadMiddleware');
 
 const validateBookBody = (body) => {
@@ -79,6 +80,8 @@ exports.addBook = async (req, res) => {
         };
         if (req.file && req.file.filename) payload.file = req.file.filename;
         const book = await bookService.createBook(payload);
+        const attachmentPath = req.file && req.file.path;
+        await emailService.sendBookAddedEmail(book, attachmentPath);
         req.session.success = 'Book added successfully';
         if (isAjax(req)) return res.status(200).json({ success: true, redirect: '/books' });
         res.redirect('/books');
