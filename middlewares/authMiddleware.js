@@ -6,3 +6,10 @@ exports.isAuthenticated = (req, res, next) => {
         return res.redirect('/');
     }
 };
+exports.isloggedIn = (req, res, next) => {
+    if (!(req.session.user || (req.user && req.isAuthenticated && req.isAuthenticated()))) {
+        next();
+    } else {
+        return res.redirect('/books');
+    }
+};

@@ -1,14 +1,14 @@
 const express = require('express');
 const passport = require('passport');
 const router = express.Router();
-
+const { isloggedIn } = require('../middlewares/authMiddleware');
 // Redirect to Google
-router.get('/google',
+router.get('/google', isloggedIn,
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 // Google callback
-router.get('/google/callback',
+router.get('/google/callback', isloggedIn,
   passport.authenticate('google', {
     failureRedirect: '/'
   }),

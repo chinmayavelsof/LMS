@@ -49,6 +49,7 @@
                                             <table id="simpletable" class="table dt-responsive task-list-table table-striped table-bordered nowrap">
                                                 <thead>
                                                     <tr>
+                                                        <th>Image</th>
                                                         <th>Book Name</th>
                                                         <th>Author Name</th>
                                                         <th>ISBN</th>
@@ -58,6 +59,15 @@
                                                 <tbody class="task-page">
                                                     <% (books || []).forEach(book => { %>   
                                                         <tr>
+                                                            <td>
+                                                                <% if (book.file) { %>
+                                                                <a href="/books/image/<%= book.id %>?download=1" title="Click to download image" class="book-image-link">
+                                                                    <img src="/books/image/<%= book.id %>" alt="Book cover" class="book-list-thumb" style="max-width:60px;max-height:60px;object-fit:cover;">
+                                                                </a>
+                                                                <% } else { %>
+                                                                <span class="text-muted">—</span>
+                                                                <% } %>
+                                                            </td>
                                                             <td><%= book.book_name %></td>
                                                             <td><%= book.author_name %></td>
                                                             <td><%= book.isbn %></td>
@@ -106,27 +116,4 @@
     </div>
 </section>
 <!-- [ Main Content ] end -->
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.delete-book-link').forEach(function(link) {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      var url = this.getAttribute('data-url');
-      Swal.fire({
-        title: 'Are you sure?',
-        text: 'Do you want to delete this book?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
-      }).then(function(result) {
-        if (result.isConfirmed) {
-          window.location.href = url;
-        }
-      });
-    });
-  });
-});
-</script>
+<script src="/assets/js/book-list.js"></script>

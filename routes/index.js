@@ -1,10 +1,10 @@
 var express = require('express');
 var router = express.Router();
 const authController = require('../controllers/authController');
-const { isAuthenticated } = require('../middlewares/authMiddleware');
+const { isAuthenticated, isloggedIn } = require('../middlewares/authMiddleware');
 
 /* LOGIN PAGE */
-router.get('/', function(req, res) {
+router.get('/', isloggedIn, function(req, res) {
   const error = req.session.error;
   const success = req.session.success;
   if (error) delete req.session.error;
@@ -19,10 +19,10 @@ router.get('/', function(req, res) {
 });
 
 /* REGISTER */
-router.post('/register', authController.register);
+router.post('/register', isloggedIn, authController.register);
 
 /* LOGIN */
-router.post('/login', authController.login);
+router.post('/login', isloggedIn, authController.login);
 
 // /* DASHBOARD (PROTECTED ROUTE) */
 // router.get('/dashboard', isAuthenticated, function(req, res) {
@@ -33,6 +33,6 @@ router.post('/login', authController.login);
 // });
 
 /* LOGOUT */
-router.get('/logout', authController.logout);
+router.get('/logout', isAuthenticated, authController.logout);
 
 module.exports = router;

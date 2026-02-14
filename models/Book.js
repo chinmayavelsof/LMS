@@ -40,8 +40,8 @@ const Book = sequelize.define('Book', {
         defaultValue: DataTypes.NOW
     },
     file: {
-        type: DataTypes.STRING(100),
-        allowNull: true
+        type: DataTypes.STRING(255),
+        allowNull: true,
     }
 }, {
     tableName: 'books',

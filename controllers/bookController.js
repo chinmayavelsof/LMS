@@ -1,4 +1,7 @@
+const path = require('path');
+const fs = require('fs');
 const bookService = require('../services/bookService');
+const { uploadDir } = require('../middlewares/uploadMiddleware');
 
 const validateBookBody = (body) => {
     const errors = {};
@@ -13,6 +16,8 @@ const validateBookBody = (body) => {
     else if (isbn.length > 8) errors.isbn = ['ISBN must be at most 8 characters'];
     return errors;
 };
+
+const isAjax = (req) => req.xhr || (req.get('Accept') && req.get('Accept').includes('application/json'));
 
 const isValidBookId = (id) => {
     const n = parseInt(id, 10);
@@ -42,7 +47,15 @@ exports.getAllBooks = async (req, res) => {
             error
         });
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.render('book_list', {
+            books: [],
+            totalBooks: 0,
+            totalPages: 0,
+            currentPage: 1,
+            limit: 10,
+            success: null,
+            error: error.message || 'Failed to load books.'
+        });
     }
 };
 
@@ -51,6 +64,7 @@ exports.addBook = async (req, res) => {
     try {
         const validationErrors = validateBookBody(req.body);
         if (Object.keys(validationErrors).length > 0) {
+            if (isAjax(req)) return res.status(400).json({ errors: validationErrors });
             return res.render('add_book', {
                 action: 'add',
                 old: req.body || {},
@@ -58,12 +72,15 @@ exports.addBook = async (req, res) => {
             });
         }
         const { book_name, author_name, isbn } = req.body;
-        const book = await bookService.createBook({
+        const payload = {
             book_name: String(book_name ?? '').trim(),
             author_name: String(author_name ?? '').trim(),
             isbn: String(isbn ?? '').trim()
-        });
+        };
+        if (req.file && req.file.filename) payload.file = req.file.filename;
+        const book = await bookService.createBook(payload);
         req.session.success = 'Book added successfully';
+        if (isAjax(req)) return res.status(200).json({ success: true, redirect: '/books' });
         res.redirect('/books');
     } catch (error) {
         const errors = {};
@@ -74,6 +91,7 @@ exports.addBook = async (req, res) => {
         } else {
             errors._general = [error.message];
         }
+        if (isAjax(req)) return res.status(400).json({ errors });
         return res.render('add_book', {
             action: 'add',
             old: req.body || {},
@@ -122,10 +140,12 @@ exports.updateBook = async (req, res) => {
         const id = req.params.id;
         if (!isValidBookId(id)) {
             req.session.error = 'Invalid book ID';
+            if (isAjax(req)) return res.status(400).json({ errors: { _general: ['Invalid book ID'] } });
             return res.redirect('/books');
         }
         const validationErrors = validateBookBody(req.body);
         if (Object.keys(validationErrors).length > 0) {
+            if (isAjax(req)) return res.status(400).json({ errors: validationErrors });
             return res.render('add_book', {
                 action: 'edit',
                 old: { ...req.body, id },
@@ -137,8 +157,17 @@ exports.updateBook = async (req, res) => {
             author_name: req.body.author_name,
             isbn: req.body.isbn
         };
+        if (req.file && req.file.filename) {
+            const existing = await bookService.getBookById(id);
+            if (existing && existing.file) {
+                const oldPath = path.join(uploadDir, existing.file);
+                if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+            }
+            data.file = req.file.filename;
+        }
         await bookService.updateBook(id, data);
         req.session.success = 'Book updated successfully';
+        if (isAjax(req)) return res.status(200).json({ success: true, redirect: '/books' });
         res.redirect('/books');
     } catch (error) {
         const errors = {};
@@ -149,11 +178,34 @@ exports.updateBook = async (req, res) => {
         } else {
             errors._general = [error.message];
         }
+        if (isAjax(req)) return res.status(400).json({ errors });
         return res.render('add_book', {
             action: 'edit',
             old: { ...req.body, id: req.params.id },
             errors
         });
+    }
+};
+
+// Serve book image (inline for display in listing)
+exports.getBookImage = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const asAttachment = req.query.download === '1';
+        if (!isValidBookId(id)) return res.status(404).end();
+        const book = await bookService.getBookById(id);
+        if (!book || !book.file) return res.status(404).end();
+        const filePath = path.join(uploadDir, book.file);
+        if (!fs.existsSync(filePath)) return res.status(404).end();
+        const ext = path.extname(book.file).toLowerCase();
+        const contentType = ext === '.png' ? 'image/png' : 'image/jpeg';
+        res.setHeader('Content-Type', contentType);
+        if (asAttachment) {
+            res.setHeader('Content-Disposition', `attachment; filename="book-${book.id}-cover${ext}"`);
+        }
+        res.sendFile(path.resolve(filePath));
+    } catch (err) {
+        res.status(500).end();
     }
 };
 
