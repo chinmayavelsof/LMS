@@ -1,7 +1,18 @@
 var express = require('express');
 var router = express.Router();
+const rateLimit = require('express-rate-limit');
 const authController = require('../controllers/authController');
 const { isAuthenticated, isloggedIn } = require('../middlewares/authMiddleware');
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many login attempts. Try again later.',
+  handler: (req, res) => {
+    req.session.error = 'Too many login attempts. Try again in 15 minutes.';
+    res.redirect('/');
+  }
+});
 
 /* LOGIN PAGE */
 router.get('/', isloggedIn, function(req, res) {
@@ -22,7 +33,7 @@ router.get('/', isloggedIn, function(req, res) {
 router.post('/register', isloggedIn, authController.register);
 
 /* LOGIN */
-router.post('/login', isloggedIn, authController.login);
+router.post('/login', loginLimiter, isloggedIn, authController.login);
 
 // /* DASHBOARD (PROTECTED ROUTE) */
 // router.get('/dashboard', isAuthenticated, function(req, res) {

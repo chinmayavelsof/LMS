@@ -61,4 +61,14 @@
             }
         });
     });
+
+    var cancelBtn = document.getElementById('bookCancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            if (!this.disabled) {
+                var href = this.getAttribute('data-href');
+                if (href) window.location.href = href;
+            }
+        });
+    }
 })();

@@ -1,6 +1,12 @@
 require('dotenv').config();
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+});
+
 const passport = require('passport');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 require('./config/passport');
 const express = require('express');
 const path = require('path');
@@ -13,6 +19,8 @@ const indexRouter = require('./routes/index');
 const booksRouter = require('./routes/books');
 
 const app = express();
+
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -30,7 +38,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'lms-secret-key-dev',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: 'strict',
+    maxAge: 24 * 60 * 60 * 1000
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
