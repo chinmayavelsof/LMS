@@ -1,5 +1,9 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const userService = require('../services/userService');
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 const validateRegister = (body) => {
     const errors = [];
@@ -127,6 +131,17 @@ exports.login = async (req, res) => {
             username: user.username
         };
 
+        const token = jwt.sign(
+            { id: user.id, username: user.username, first_name: user.first_name, last_name: user.last_name },
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
+        );
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: 'lax'
+        });
+
         res.redirect('/books');
 
     } catch (error) {
@@ -143,6 +158,7 @@ exports.login = async (req, res) => {
 
 // LOGOUT
 exports.logout = (req, res) => {
+    res.clearCookie('auth_token');
     req.session.destroy(() => {
         res.redirect('/');
     });

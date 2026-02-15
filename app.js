@@ -1,5 +1,6 @@
 require('dotenv').config();
 const passport = require('passport');
+const cookieParser = require('cookie-parser');
 require('./config/passport');
 const express = require('express');
 const path = require('path');
@@ -24,6 +25,7 @@ app.set('layout', 'layouts/main');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'lms-secret-key-dev',

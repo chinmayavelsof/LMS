@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { isAuthenticated } = require('../middlewares/authMiddleware');
+const { authenticateJWT, isAuthenticated } = require('../middlewares/authMiddleware');
 const { uploadBookImage, handleMulterError } = require('../middlewares/uploadMiddleware');
 const bookController = require('../controllers/bookController');
+
+router.use(authenticateJWT);
 
 router.get('/add_books', isAuthenticated, bookController.addBookForm);
 
