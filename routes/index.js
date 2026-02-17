@@ -6,7 +6,7 @@ const { isAuthenticated, isloggedIn } = require('../middlewares/authMiddleware')
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 15,
   message: 'Too many login attempts. Try again later.',
   handler: (req, res) => {
     req.session.error = 'Too many login attempts. Try again in 15 minutes.';

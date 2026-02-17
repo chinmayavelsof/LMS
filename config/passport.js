@@ -9,19 +9,30 @@ passport.use(new GoogleStrategy({
 },
 async (accessToken, refreshToken, profile, done) => {
   try {
-    let user = await User.findOne({
-      where: { google_id: profile.id }
-    });
+    const email = profile.emails[0].value;
+    const googleId = profile.id;
+
+    // Check if user already exists with this email
+    let user = await User.findOne({ where: { email } });
 
     if (!user) {
+      // Create new user
       user = await User.create({
-        google_id: profile.id,
+        email,
+        google_id: googleId,
         first_name: profile.name.givenName,
         last_name: profile.name.familyName,
-        email: profile.emails[0].value
+        username: email.split('@')[0]
       });
-    }
 
+    } else if (!user.google_id) {
+      // Email exists but not linked to Google - link it
+      await user.update({ google_id: googleId });
+
+    } else if (user.google_id !== googleId) {
+      // Email exists but linked to different Google account
+      return done(null, false, { message: "Email already linked to another Google account" });
+    }
     return done(null, user);
   } catch (err) {
     return done(err, null);
