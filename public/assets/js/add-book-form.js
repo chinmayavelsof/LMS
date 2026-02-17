@@ -53,11 +53,6 @@
                 if (cancelBtn) cancelBtn.disabled = false;
                 var err = xhr.responseJSON && xhr.responseJSON.errors;
                 if (err) showErrors(err);
-                Swal.fire({
-                    title: 'Error',
-                    text: err && err._general && err._general[0] ? err._general[0] : 'Something went wrong.',
-                    icon: 'error'
-                });
             }
         });
     });
