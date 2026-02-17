@@ -42,7 +42,12 @@
 											<div class="form-group row">
 												<label for="bookImage" class="col-sm-3 col-form-label">Book Image</label>
 												<div class="col-sm-6">
-													<input type="file" class="form-control-file" id="bookImage" name="book_image" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png" required>
+                                                    <% if (action === 'add') { %>
+                                                        <input type="file" class="form-control-file" id="bookImage" name="book_image" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png" required>
+                                                    <% } else { %>
+                                                        <input type="file" class="form-control-file" id="bookImage" name="book_image" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png">
+                                                    <% } %>
+													<input type="file" class="form-control-file" id="bookImage" name="book_image" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png">
 													<small class="form-text text-muted">Allowed: JPEG, JPG, PNG. Max size: 2MB.</small>
 													<span class="text-danger" id="bookImageError"><%= errors?.book_image ? errors.book_image[0] : '' %></span>
 													<% if (action === 'edit' && old?.file) { %>
